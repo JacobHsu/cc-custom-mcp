@@ -33,9 +33,9 @@
 - [uv](https://docs.astral.sh/uv/)（推薦的執行方式）
 - Claude Code（MCP 客戶端）
 
-## 安裝與啟動（uv 版本）
+## 安裝與啟動
 
-本專案改為使用 `uv` 在本地端執行 MCP Server，**不再依賴 Docker**。
+本專案使用 `uv` 在本地端執行 MCP Server。
 
 1. 用 Claude Code 開啟此專案資料夾
 2. 執行 slash command：
@@ -87,15 +87,13 @@
 cc-custom-mcp/
 ├── server.py                  # MCP Server 主程式
 ├── requirements.txt           # Python 依賴
-├── .mcp.json                  # Claude Code MCP 設定（uv 版）
-├── Dockerfile                 # 舊版 Docker 設定（保留，可不用）
+├── .mcp.json                  # Claude Code MCP 設定
 ├── README.md                  # 本文件
 ├── .claude/
 │   └── commands/
+│       ├── setup_image_tools_server.md
 │       └── rebuild_restart_image_tools_server.md
-├── images/                    # 下載與處理後的圖片
-├── input/                     # 輸入圖片
-└── output/                    # 輸出圖片
+└── images/                    # 下載與處理後的圖片
 ```
 
 ## Python 依賴
@@ -134,22 +132,6 @@ uv pip install -U duckduckgo-search
 - 看 Claude Code 顯示的 stderr 訊息
 - 確認虛擬環境已建立且依賴已安裝（`uv pip list`）
 - 確認檔案路徑可存取
-
-## （已淘汰）Docker 執行方式
-
-舊版本透過 Docker 執行：
-
-```bash
-docker build -t mcp-toy-image-tools-server .
-```
-
-並搭配 `.mcp.json` 的 docker 設定。本專案已改為 uv 方案，因為：
-
-- 不需要 Docker Desktop
-- 啟動更快、資源更省
-- 跨機器分享只要 clone repo 就能用
-
-`Dockerfile` 保留供有特殊需求的使用者參考。
 
 ## 開發：新增工具
 
