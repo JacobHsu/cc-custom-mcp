@@ -27,15 +27,21 @@
 ### 📐 圖片裁切 (`crop_image`)
 - 將圖片裁切成圓形、方形、矩形
 
+### 📸 網站截圖 (`screenshot_website`)
+- 用 headless Chromium 開啟任意 URL，產出 **600×450 PNG**
+- 尺寸對齊 [card-personal-portfolio](https://jacobhsu.github.io/card-personal-portfolio/) 的 project 卡片
+- viewport 採 1200×900（4:3），縮放後完全不變形
+- 可選參數：`output_dir`、`filename`、`wait_seconds`（等動畫穩定）
+
 ## 環境需求
 
 - Python 3.11 以上
 - [uv](https://docs.astral.sh/uv/)（推薦的執行方式）
 - Claude Code（MCP 客戶端）
 
-## 安裝與啟動
+## 安裝與啟動（uv 版本）
 
-本專案使用 `uv` 在本地端執行 MCP Server。
+本專案改為使用 `uv` 在本地端執行 MCP Server，**不再依賴 Docker**。
 
 1. 用 Claude Code 開啟此專案資料夾
 2. 執行 slash command：
@@ -73,6 +79,14 @@
 把 ./images/robot_toy_1.jpg 裁切成圓形。
 ```
 
+### 產生 portfolio 用網站縮圖
+```
+用 screenshot_website 幫 https://jacobhsu.github.io/team_map/ 產出一張 portfolio 用的縮圖，存成 team_map.png。
+```
+產出位置：`./images/team_map.png`（600×450 PNG），可直接放到 `card-personal-portfolio/assets/images/` 取代既有 `project-*.png`。
+
+> 首次使用前需安裝 Chromium：`uv run playwright install chromium`（約 150MB，只需一次）。
+
 ## 重啟 Server
 
 修改 `server.py` 後：
@@ -86,14 +100,18 @@
 ```
 cc-custom-mcp/
 ├── server.py                  # MCP Server 主程式
+├── tools/
+│   └── screenshot.py          # 網站截圖工具實作
 ├── requirements.txt           # Python 依賴
-├── .mcp.json                  # Claude Code MCP 設定
+├── .mcp.json                  # Claude Code MCP 設定（uv 版）
+├── Dockerfile                 # 舊版 Docker 設定（保留，可不用）
 ├── README.md                  # 本文件
 ├── .claude/
 │   └── commands/
-│       ├── setup_image_tools_server.md
 │       └── rebuild_restart_image_tools_server.md
-└── images/                    # 下載與處理後的圖片
+├── images/                    # 下載與處理後的圖片
+├── input/                     # 輸入圖片
+└── output/                    # 輸出圖片
 ```
 
 ## Python 依賴
@@ -102,6 +120,7 @@ cc-custom-mcp/
 - **Pillow** — 圖片處理
 - **requests** — HTTP 下載
 - **duckduckgo-search** — 圖片搜尋
+- **playwright** — headless Chromium 網站截圖
 - **rembg** — AI 去背模型
 
 ## 疑難排解
@@ -122,6 +141,9 @@ uv pip install -U duckduckgo-search
 - `rembg` 會下載 AI 模型（約 100MB+），首次需要時間
 - 確認硬碟空間足夠
 
+### 4-1. `screenshot_website` 報 `Executable doesn't exist`
+- Playwright 還沒裝瀏覽器，執行：`uv run playwright install chromium`
+
 ### 5. Claude Code 看不到 Server
 - 確認用 Claude Code 打開的是專案根目錄（而非父層）
 - 確認 `.mcp.json` 存在於根目錄
@@ -132,6 +154,22 @@ uv pip install -U duckduckgo-search
 - 看 Claude Code 顯示的 stderr 訊息
 - 確認虛擬環境已建立且依賴已安裝（`uv pip list`）
 - 確認檔案路徑可存取
+
+## （已淘汰）Docker 執行方式
+
+舊版本透過 Docker 執行：
+
+```bash
+docker build -t mcp-toy-image-tools-server .
+```
+
+並搭配 `.mcp.json` 的 docker 設定。本專案已改為 uv 方案，因為：
+
+- 不需要 Docker Desktop
+- 啟動更快、資源更省
+- 跨機器分享只要 clone repo 就能用
+
+`Dockerfile` 保留供有特殊需求的使用者參考。
 
 ## 開發：新增工具
 
