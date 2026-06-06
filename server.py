@@ -20,30 +20,12 @@ from PIL import Image
 
 from mcp.server.fastmcp import FastMCP
 
-from tools.screenshot import screenshot_website as _screenshot_website
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("image-tools-server")
 
 # Create server instance
 mcp = FastMCP("image-tools-server")
-
-
-@mcp.tool()
-async def screenshot_website(
-    url: str,
-    output_dir: str = "./images",
-    filename: Optional[str] = None,
-    wait_seconds: float = 2.0,
-) -> str:
-    """Capture a website and produce a 600x450 PNG thumbnail for portfolio cards.
-
-    Renders the page in headless Chromium at a 1200x900 viewport (4:3) and
-    downscales to 600x450 — matching the convention used at
-    https://jacobhsu.github.io/card-personal-portfolio/.
-    """
-    return await _screenshot_website(url, output_dir, filename, wait_seconds)
 
 @mcp.tool()
 async def fetch_toy_image(keyword: str, count: int = 3, output_dir: str = "./images", max_search_results: int = 20) -> str:

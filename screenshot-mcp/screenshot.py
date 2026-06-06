@@ -1,7 +1,7 @@
-"""Website screenshot tool for portfolio thumbnails.
+"""Website screenshot implementation.
 
-Captures a webpage at a 4:3 viewport (1200x900 retina) and downscales to
-600x450 PNG — the dimension convention used across the portfolio at
+Captures a webpage at a 4:3 viewport (1200x900) and downscales to 600x450 PNG —
+matching the project card dimension convention used at
 https://jacobhsu.github.io/card-personal-portfolio/.
 """
 
@@ -16,7 +16,7 @@ from urllib.parse import urlparse
 from PIL import Image
 from playwright.async_api import async_playwright
 
-logger = logging.getLogger("image-tools-server.screenshot")
+logger = logging.getLogger("screenshot-resize.screenshot")
 
 VIEWPORT_W = 1200
 VIEWPORT_H = 900
@@ -32,20 +32,13 @@ def _derive_filename(url: str) -> str:
     return f"{slug or 'screenshot'}.png"
 
 
-async def screenshot_website(
+async def capture(
     url: str,
     output_dir: str = "./images",
     filename: Optional[str] = None,
     wait_seconds: float = 2.0,
 ) -> str:
-    """Capture a website and produce a 600x450 portfolio thumbnail.
-
-    Args:
-        url: Full URL to capture.
-        output_dir: Directory to save the PNG. Created if missing.
-        filename: Output filename. If None, derived from URL path.
-        wait_seconds: Extra wait after networkidle for animations to settle.
-    """
+    """Capture URL and save as 600x450 PNG."""
     os.makedirs(output_dir, exist_ok=True)
     out_name = filename or _derive_filename(url)
     if not out_name.lower().endswith(".png"):
