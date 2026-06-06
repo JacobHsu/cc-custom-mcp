@@ -1,15 +1,21 @@
-### Check whether docker service is running 
-use the command below to check whether docker is running.
+### Check whether uv is installed
+Use the command below to check whether uv is installed.
 ```bash
-docker --version
+uv --version
 ```
 
-If not, reminder user to start the Docker service first and abort the command execution here.
+If not, remind the user to install uv first (`pip install uv` or see https://docs.astral.sh/uv/) and abort the command execution here.
 
-### Rebuild Docker Image to reflect changes in python code 
+### Sync dependencies to reflect changes in python code or requirements
 ```bash
-   docker build -t mcp-toy-image-tools-server .
+uv pip install -r requirements.txt
 ```
 
-### Restart the MCP server 
-Remind the users to use ```/mcp``` command, and look for ```image-tools-server-docker``` and reconnect
+If the virtual environment does not exist yet, create it first:
+```bash
+uv venv
+uv pip install -r requirements.txt
+```
+
+### Restart the MCP server
+Remind the user to use the ```/mcp``` command, look for ```image-tools-server``` and reconnect.

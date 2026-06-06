@@ -1,266 +1,182 @@
-# MCP Image Tools Server
+# MCP 圖片工具 Server
 
-A Model Context Protocol (MCP) server that provides powerful image processing tools for Claude Code. This server implements three main functionalities: downloading toy-related images from the web, resizing images, and removing backgrounds from images.
+一個 Model Context Protocol (MCP) Server，為 Claude Code 提供圖片處理工具。功能包含：從網路下載玩具圖片、調整圖片大小、AI 去背、以及圖片裁切。
 
-- Anthropic MCP Pythone SDK Github repo: https://github.com/modelcontextprotocol/python-sdk?tab=readme-ov-file
+- Anthropic MCP Python SDK：https://github.com/modelcontextprotocol/python-sdk
 
-## Features
+## 功能
 
-### 🧸 Toy Image Fetcher (`fetch_toy_image`)
-- Downloads toy-related images from DuckDuckGo search
-- Automatically prefixes search terms with "toy" for better results
-- Supports downloading 1-10 images per request
-- Saves images to a specified directory
+### 🧸 玩具圖片下載 (`fetch_toy_image`)
+- 透過 DuckDuckGo 搜尋下載玩具相關圖片
+- 自動在搜尋詞前加上 "toy" 提升搜尋品質
+- 一次可下載 1–10 張圖片
+- 圖片儲存到指定資料夾
 
-### 🖼️ Image Resizer (`resize_image`)
-- Resize images to specific dimensions
-- Option to maintain aspect ratio
-- High-quality resampling using Lanczos algorithm
-- Support for all common image formats
+### 🖼️ 圖片縮放 (`resize_image`)
+- 將圖片調整到指定尺寸
+- 可選擇是否保持長寬比
+- 採用 Lanczos 演算法重採樣，畫質高
+- 支援常見圖片格式
 
-### ✂️ Background Remover (`remove_background_as_png`)
-- AI-powered background removal using state-of-the-art models
-- Multiple model options (u2net, u2netp, silueta, isnet-general-use)
-- Outputs PNG with transparent background
-- Preserves main object details
+### ✂️ AI 去背 (`remove_background_as_png`)
+- 使用 rembg 模型自動去背
+- 可選擇模型：u2net、u2netp、silueta、isnet-general-use
+- 輸出透明背景的 PNG
+- 保留主體細節
 
-## Prerequisites
+### 📐 圖片裁切 (`crop_image`)
+- 將圖片裁切成圓形、方形、矩形
 
-- Python 3.11 or higher
-- Docker (for containerized deployment)
-- Claude Code (for MCP client integration)
+## 環境需求
 
-## Installation
+- Python 3.11 以上
+- [uv](https://docs.astral.sh/uv/)（推薦的執行方式）
+- Claude Code（MCP 客戶端）
 
-### Option 1: Local Python Installation
+## 安裝與啟動（uv 版本）
 
-1. **Clone or create the project directory:**
-   ```bash
-   mkdir mcp-toy-image-tools && cd mcp-toy-image-tools
+本專案改為使用 `uv` 在本地端執行 MCP Server，**不再依賴 Docker**。
+
+1. 用 Claude Code 開啟此專案資料夾
+2. 執行 slash command：
+
+   ```
+   /setup_image_tools_server
    ```
 
-2. **Install Python dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+3. 完成後執行 `/mcp` 連線 `image-tools-server`
 
-3. **Run the server:**
-   ```bash
-   python server.py
-   ```
+> 詳細步驟（檢查 uv、建 venv、裝依賴、確認 `.mcp.json`）見 [.claude/commands/setup_image_tools_server.md](.claude/commands/setup_image_tools_server.md)
 
-### Option 2: Docker Installation (Recommended)
+## 使用範例
 
-1. **Build the Docker image:**
-   ```bash
-   docker build -t mcp-toy-image-tools-server .
-   ```
+連線成功後，可以在 Claude Code 中這樣請求：
+> download 3 different random pictures of single castle. resize below 150px either the width or the length.
 
-2. **Create necessary directories:**
-   ```bash
-   mkdir -p images input output
-   ```
-
-3. **Run the container:**
-   ```bash
-   docker run --rm -i \
-     --name mcp-toy-image-tools \
-     -v $(pwd)/images:/app/images \
-     -v $(pwd)/input:/app/input \
-     -v $(pwd)/output:/app/output \
-     mcp-toy-image-tools-server
-   ```
-
-## Claude Code Integration
-
-### Step 1: Configure Claude Code
-
-1. **Copy the MCP configuration to your Claude Code settings:**
-   
-   For Docker execution:
-   ```json
-   {
-     "mcpServers": {
-       "image-tools-server-docker": {
-         "command": "docker",
-         "args": [
-           "run",
-           "--rm",
-           "-i",
-           "--name", "mcp-toy-image-tools",
-           "-v", "${PWD}/images:/app/images",
-           "-v", "${PWD}/input:/app/input",
-           "-v", "${PWD}/output:/app/output",
-           "mcp-toy-image-tools-server"
-         ],
-         "cwd": "/path/to/your/mcp-toy-image-tools"
-       }
-     }
-   }
-   ```
-
-2. **Update the `cwd` path to match your actual project directory.**
-
-### Step 2: Restart Claude Code
-
-After updating your MCP configuration, restart Claude Code to load the new server.
-
-## Usage Examples
-
-Once integrated with Claude Code, you can use these commands:
-
-### Download Toy Images
+### 下載玩具圖片
 ```
-Please use the fetch_toy_image tool to download 5 robot toy images to the ./images directory.
+請用 fetch_toy_image 工具下載 5 張機器人玩具圖片到 ./images 資料夾。
 ```
 
-### Resize Images
+### 調整圖片尺寸
 ```
-Can you resize the image at ./images/robot_toy_1.jpg to 800x600 pixels?
-```
-
-### Remove Background
-```
-Please remove the background from ./images/robot_toy_1.jpg and save it as a PNG.
+幫我把 ./images/robot_toy_1.jpg 縮放到 800x600。
 ```
 
-## File Structure
-
+### 移除背景
 ```
-mcp-toy-image-tools/
-├── server.py              # Main MCP server implementation
-├── requirements.txt       # Python dependencies
-├── Dockerfile            # Docker container configuration
-├── .mcp.json            # Claude Code MCP configuration
-├── README.md            # This documentation
-├── images/              # Directory for downloaded/processed images
-├── input/               # Directory for input images (Docker)
-└── output/              # Directory for output images (Docker)
+請把 ./images/robot_toy_1.jpg 的背景去掉，存成 PNG。
 ```
 
-## Dependencies
+### 裁切成圓形
+```
+把 ./images/robot_toy_1.jpg 裁切成圓形。
+```
 
-### Python Libraries
-- **mcp**: Anthropic's Model Context Protocol SDK
-- **Pillow**: Python Imaging Library for image processing
-- **requests**: HTTP client for downloading images
-- **duckduckgo-search**: DuckDuckGo search API client
-- **torch/torchvision**: PyTorch for AI model inference
+## 重啟 Server
 
-### System Dependencies (Docker only)
-- OpenGL libraries for image processing
-- GLib and threading libraries
-- Various image format support libraries
+修改 `server.py` 後：
 
-## Configuration Options
+- **只改 Python 程式碼** → 直接在 Claude Code 用 `/mcp` 重新連線即可，不需重裝依賴
+- **修改 `requirements.txt`** → 執行 `uv pip install -r requirements.txt` 後再 `/mcp` 重連
+- 也可使用內附的 slash command：`/rebuild_restart_image_tools_server`
 
-### Environment Variables
-- `PYTHONPATH`: Set to project directory for proper module resolution
+## 檔案結構
 
-### Volume Mounts (Docker)
-- `/app/images`: Directory for downloaded and processed images
-- `/app/input`: Input directory for source images
-- `/app/output`: Output directory for processed images
+```
+cc-custom-mcp/
+├── server.py                  # MCP Server 主程式
+├── requirements.txt           # Python 依賴
+├── .mcp.json                  # Claude Code MCP 設定（uv 版）
+├── Dockerfile                 # 舊版 Docker 設定（保留，可不用）
+├── README.md                  # 本文件
+├── .claude/
+│   └── commands/
+│       └── rebuild_restart_image_tools_server.md
+├── images/                    # 下載與處理後的圖片
+├── input/                     # 輸入圖片
+└── output/                    # 輸出圖片
+```
 
-## Troubleshooting
+## Python 依賴
 
-### Common Issues
+- **mcp** — Anthropic Model Context Protocol SDK
+- **Pillow** — 圖片處理
+- **requests** — HTTP 下載
+- **duckduckgo-search** — 圖片搜尋
+- **rembg** — AI 去背模型
 
-1. **"duckduckgo-search library not available" error:**
-   ```bash
-   pip install duckduckgo-search
-   ```
+## 疑難排解
 
-2. **Image download failures:**
-   - Check internet connection
-   - Some images may be blocked by the source website
-   - The tool automatically retries with additional results
+### 1. `uv: command not found`
+安裝 uv：`pip install uv`，或重新開啟 terminal 讓 PATH 生效。
 
-3. **Background removal model download:**
-   - First use may take longer as AI models are downloaded
-   - Ensure sufficient disk space (~100MB+ for models)
-
-4. **Permission errors (Docker):**
-   - Ensure volume mount directories have proper permissions
-   - The container runs as non-root user `mcp-user`
-
-### Debug Mode
-
-To run with debug logging:
+### 2. `duckduckgo-search` 套件問題
 ```bash
-# Direct Python
-PYTHONPATH=. python server.py --log-level DEBUG
-
-# Docker
-docker run --rm -i -e LOG_LEVEL=DEBUG mcp-toy-image-tools-server
+uv pip install -U duckduckgo-search
 ```
 
-### Claude Code Connection Issues
+### 3. 圖片下載失敗
+- 檢查網路連線
+- 部分來源網站可能擋掉請求，工具會自動重試
 
-1. **Server not appearing in Claude Code:**
-   - Check that `.mcp.json` is in the correct location
-   - Verify the `cwd` path is correct
-   - Restart Claude Code after configuration changes
+### 4. 首次去背很慢
+- `rembg` 會下載 AI 模型（約 100MB+），首次需要時間
+- 確認硬碟空間足夠
 
-2. **Tool execution errors:**
-   - Check server logs for detailed error messages
-   - Ensure all dependencies are installed
-   - Verify file paths are accessible
+### 5. Claude Code 看不到 Server
+- 確認用 Claude Code 打開的是專案根目錄（而非父層）
+- 確認 `.mcp.json` 存在於根目錄
+- 確認 `uv` 在系統 PATH 中
+- 修改設定後重連 `/mcp`
 
-## Development
+### 6. 工具執行失敗
+- 看 Claude Code 顯示的 stderr 訊息
+- 確認虛擬環境已建立且依賴已安裝（`uv pip list`）
+- 確認檔案路徑可存取
 
-### Adding New Tools
+## （已淘汰）Docker 執行方式
 
-To add new image processing tools:
+舊版本透過 Docker 執行：
 
-1. **Define the tool in `handle_list_tools()`:**
-   ```python
-   Tool(
-       name="your_new_tool",
-       description="Description of what it does",
-       inputSchema={...}
-   )
-   ```
-
-2. **Implement the handler in `handle_call_tool()`:**
-   ```python
-   elif name == "your_new_tool":
-       return await your_new_tool_function(arguments)
-   ```
-
-3. **Add the async function implementation:**
-   ```python
-   async def your_new_tool_function(arguments: dict[str, Any]) -> list[TextContent]:
-       # Implementation here
-       pass
-   ```
-
-### Testing
-
-Test the server independently:
 ```bash
-echo '{"method": "tools/list", "params": {}}' | python server.py
+docker build -t mcp-toy-image-tools-server .
 ```
+
+並搭配 `.mcp.json` 的 docker 設定。本專案已改為 uv 方案，因為：
+
+- 不需要 Docker Desktop
+- 啟動更快、資源更省
+- 跨機器分享只要 clone repo 就能用
+
+`Dockerfile` 保留供有特殊需求的使用者參考。
+
+## 開發：新增工具
+
+在 `server.py` 加入新的 `@mcp.tool()` 函式：
+
+```python
+@mcp.tool()
+async def your_new_tool(param1: str, param2: int = 10) -> str:
+    """工具的功能說明 — 會顯示給 Claude 看到。"""
+    # 實作
+    return "結果訊息"
+```
+
+新增後在 Claude Code 用 `/mcp` 重連即可。
+
+## 測試 Server
+
+```bash
+uv run python server.py
+```
+
+讓 Server 在 stdio 模式啟動，可用 MCP inspector 或手動傳入 JSON-RPC 請求測試。
 
 ## License
 
-This project is provided as-is for educational and development purposes. Please respect the terms of service of image sources and AI models used.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## Support
-
-For issues and questions:
-- Check the troubleshooting section above
-- Review Claude Code MCP documentation
-- Submit issues to the project repository
+僅供學習與開發用途。請尊重圖片來源網站的服務條款與 AI 模型的授權條款。
 
 ---
 
-**Note**: This tool downloads images from the internet and uses AI models for processing. Please use responsibly and respect copyright and terms of service of source websites.
+**注意**：本工具會從網路下載圖片並使用 AI 模型處理，請合理使用並尊重來源網站的版權與服務條款。
