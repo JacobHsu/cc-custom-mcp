@@ -7,6 +7,10 @@
     "screenshot-resize": {
       "command": "uv",
       "args": ["run", "--directory", "screenshot-mcp", "python", "server.py"]
+    },
+    "icon-generator": {
+      "type": "sse",
+      "url": "https://icon-generator-mcp-pi.vercel.app/sse"
     }
   }
 }
