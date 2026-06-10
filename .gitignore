@@ -1,2 +1,7 @@
 venv/
-# images/
+
+# Keep images/ folders but ignore their contents
+images/*
+!images/.gitkeep
+screenshot-mcp/images/*
+!screenshot-mcp/images/.gitkeep
